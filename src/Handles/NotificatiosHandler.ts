@@ -1,15 +1,21 @@
-// import type { ServerMessage } from "../db/types/WSType"
 import WebSocket from "ws";
 import NotificationsRepository from "../repositories/Notifications";
 
 export class handleMessage {
     constructor(private repository: NotificationsRepository) { }
 
-    async getNotifications(ws: WebSocket, data: number) {
-        if (!data) throw ws.on("error", err => console.log("id_user nao pode ser vazio: ", err))
+    async createNotification(id_destinatario: number, id_actor: number, id_post: number, type: string) {
+        if (!id_destinatario || !id_post || !type) { throw new Error("MISSIN_DEPENDENCY"); }
 
-        const result = await this.repository.selectNotifications(data)
-        let response: number = Number(result.rows[0].notifications)
+        const result = await this.repository.insertNotifications(id_destinatario, id_actor, id_post, type)
+        return result.rows[0].id_user
+    }
+    async getNotifications(ws: WebSocket, id_user: number) {
+        let response: number;
+        if (!id_user) {throw new Error("id_user nao pode ser vaizo") ;}
+        
+        const result = await this.repository.selectNotifications(id_user)
+        response = Number(result.rows[0].notifications)
 
         return ws.send(JSON.stringify(response))
     }
