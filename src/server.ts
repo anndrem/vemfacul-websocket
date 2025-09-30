@@ -1,45 +1,56 @@
 import wss from "./WebSocket/WS";
 import WebSocket from "ws";
+import notificationsWorker from "./workers/notificationWorker";
 import { handleMessage } from "./Handles/NotificatiosHandler";
 import NotificationsRepository from "./repositories/Notifications";
 
 const handleEvent = new handleMessage(new NotificationsRepository())
 
+
+
 const clients: { ws: WebSocket, id_user?: number }[] = []
+
+
 wss.on("connection", (ws: WebSocket) => {
     console.log(`user connected`)
     const client: { ws: WebSocket, id_user?: number } = { ws };
     clients.push(client)
 
-    ws.on("message", async (msg: string) => {
+    notificationsWorker.on("completed", async job => {
         try {
-            const id_user: number = Number(msg.toString());
-            client.id_user = id_user
-            // await handleEvent.getNotifications(ws, id_user)
+            notificationsWorker.on("failed", () => ws.send("erro em inserir notificação"))
 
+            client.id_user = Number(JSON.parse(job.data.id_destinatario))
+            if (typeof client.id_user !== "number") { ws.send("id_user invalido"); return null }
+
+            console.log(`🔔 Nova notificação instantânea para o usuário: \x1b[32m${client.id_user}\x1b[0m`);
+            return await handleEvent.getNotifications(ws, client.id_user)
         } catch (err) {
-            console.error("erro ao receber mensagem", err)
-            ws.send(JSON.stringify("error"))
+            ws.send(`erro ao se conectar ${err}`)
         }
+    })
 
-        ws.on("close", () => {
-            const idx = clients.findIndex(c => c.ws === ws)
-            if (idx !== -1) clients.splice(idx, 1)
-            console.log("Cliente desconectado")
-        })
+    // ws.on("message", (msg: string) => {
+    //     try {
+    //         const ws_id_user = Number(JSON.parse(msg))
+    //         client.id_user = (ws_id_user);
+
+    //         notificationsWorker.on("completed", async job => {
+    //             if (typeof client.id_user !== "number") { ws.send("id_user não definido ou inválido"); return null; }
+
+    //             console.log("Pintou notificação:", job.id)
+    //             return await handleEvent.getNotifications(ws, client.id_user);
+    //         })
+    //     } catch (err) { ws.send(`erro ao buscar notificação ${err}`) }
+    // })
+
+    ws.on("close", () => {
+        const idx = clients.findIndex(c => c.ws === ws)
+        if (idx !== -1) clients.splice(idx, 1)
+        console.log("Cliente desconectado")
     })
 })
 
-setInterval(async () => {
-    for (const client of clients) {
-        if (client.id_user) {
-            try {
-                await handleEvent.getNotifications(client.ws, client.id_user)
-            } catch (err) {
-                console.error(err)
-            }
-        }
-    }
-}, 5000)
+
 
 console.log(`🔗 Servidor WebSocket iniciado na porta ${process.env.PORT}`);
