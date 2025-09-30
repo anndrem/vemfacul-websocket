@@ -12,7 +12,6 @@ const notificationsWorker = new Worker(
     async job => {
         try {
             const {id_destinatario, id_actor, id_post, type} = job.data
-            console.log(job.data)
             return (await handleEvent.createNotification(id_destinatario, id_actor, id_post, type))
         } catch (err) {
             console.error("erro ao inserir notificação", err)
