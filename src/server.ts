@@ -16,15 +16,18 @@ wss.on("connection", (ws: WebSocket) => {
     const client: { ws: WebSocket, id_user?: number } = { ws };
     clients.push(client)
 
+    notificationsWorker.on("failed", () => ws.send("erro em inserir notificação"))
+
     notificationsWorker.on("completed", async job => {
         try {
-            notificationsWorker.on("failed", () => ws.send("erro em inserir notificação"))
-
             client.id_user = Number(JSON.parse(job.data.id_destinatario))
             if (typeof client.id_user !== "number") { ws.send("id_user invalido"); return null }
 
             console.log(`🔔 Nova notificação instantânea para o usuário: \x1b[32m${client.id_user}\x1b[0m`);
-            return await handleEvent.getNotifications(ws, client.id_user)
+            const n_notification = await handleEvent.getNotifications(client.id_user)
+
+            return ws.send(JSON.stringify(n_notification))
+            
         } catch (err) {
             ws.send(`erro ao se conectar ${err}`)
         }
