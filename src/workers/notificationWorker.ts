@@ -1,11 +1,11 @@
 import { Worker } from "bullmq"
 import IORedis from "ioredis"
 import NotificationsRepository from "../repositories/Notifications"
-import { handleMessage } from "../Handles/NotificatiosHandler"
+import { NotificationsService } from "../Services/NotificatiosServices"
 
 
 const connection = new IORedis(process.env.IOREDIS_URL ?? "", { maxRetriesPerRequest: null })
-const handleEvent = new handleMessage(new NotificationsRepository())
+const handleEvent = new NotificationsService(new NotificationsRepository())
 
 const notificationsWorker = new Worker(
     "notificationsQueue",

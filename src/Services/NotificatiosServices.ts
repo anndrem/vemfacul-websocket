@@ -1,6 +1,7 @@
 import NotificationsRepository from "../repositories/Notifications";
 
-export class handleMessage {
+
+export class NotificationsService {
     constructor(private repository: NotificationsRepository) { }
 
     async createNotification(id_destinatario: number, id_actor: number, id_post: number, type: string) {
