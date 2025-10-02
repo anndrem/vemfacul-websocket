@@ -1,4 +1,4 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { createServer } from "http";
 import express from "express";
 import notificationsWorker from "./workers/notificationWorker";
@@ -12,27 +12,27 @@ const io = new Server(httpServer, { cors: { origin: "http://localhost:3000", met
 
 
 const handlers: handlerEvents[] = []
+
+notificationsWorker.on("completed", async job => {
+    for (const h of handlers) await h.SendNotification(job.data.id_destinatario)
+})
+
+
 io.on("connection", (socket) => {
-    const handler = new handlerEvents(socket)
+    const handler = new handlerEvents(socket, { socket })
     handlers.push(handler)
+
+    handler.createClient();
     console.log("cliente conectado")
 
-
     socket.on("register", (id_user: number) => {
-        return handler.Register(Number(id_user))
-    })
-
-    notificationsWorker.on("completed", async job => {
-        const n_notification = await handler.SendNotification(job.data.id_destinatario)
-        socket.emit("notifications", n_notification)
+        handler.Register(Number(id_user))
     })
 
     socket.on("disconnect", () => {
-        notificationsWorker.removeAllListeners("completed")
-        return handler.Disconnect()
+        handler.Disconnect()
     })
 })
-
 
 
 
