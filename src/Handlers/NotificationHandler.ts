@@ -6,41 +6,38 @@ const service = new NotificationsService(new NotificationsRepository())
 
 const clients: { socket: Socket, id_user?: number }[] = []
 
-export class handlerEvent {
-    constructor(private socket: Socket, private client: { socket: Socket, id_user?: number }) { }
+export class NotificationHandler {
+    private socket: Socket
 
-    async createClient() {
-        this.client.socket = this.socket
+    constructor(socket: Socket) {
+        this.socket = socket;
     }
+
 
     async Register(id_user: number) {
         const exists = clients.find(c => c.id_user === id_user)
 
-        if (exists) { return console.log("Esse cliente existe"); }
+        if (exists) { console.log("Esse já cliente existe"); return; }
 
-        this.client = { socket: this.socket, id_user };
-        clients.push(this.client)
-        console.table(clients)
+        clients.push({ socket: this.socket, id_user })
     }
 
-    async SendNotification(id_destinatario: number) {
-        // isso ta errado
-        
-        const id_user = id_destinatario
+    static async Send(id_destinatario: number) {
         const targetClient = clients.find(c => c.id_user === id_destinatario)
-        if (!targetClient) { return console.log("Cliente nao conectado"); }
-        if (this.client.socket.id == targetClient.socket.id) { return null }
+
+        if (!targetClient) { console.log("Cliente nao conectado"); return }
 
         try {
-            const n_notification = await service.getNotifications(id_user);
+            const n_notification = await service.getNotifications(id_destinatario);
             targetClient.socket.emit("notifications", n_notification)
-            console.log(`🔔 Notificações enviadas para usuário \x1b[32m${id_user}\x1b[0m`);
+            console.log(`🔔 Notificações enviadas para usuário \x1b[32m${id_destinatario}\x1b[0m`);
+
         } catch (err) {
-            console.error(`Erro ao enviar notificações para usuário ${id_user}:`, err);
+            console.error(`Erro ao enviar notificações para usuário ${id_destinatario}:`, err);
         }
     }
 
-     Disconnect() {
+    Disconnect() {
         const idx = clients.findIndex(c => c.socket === this.socket)
         if (idx !== -1) clients.splice(idx, 1)
         console.log("🔴 Cliente desconectado:", this.socket.id);
@@ -48,4 +45,4 @@ export class handlerEvent {
 
 }
 
-export default handlerEvent; 
+export default NotificationHandler; 
