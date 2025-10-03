@@ -1,56 +1,38 @@
-import wss from "./WebSocket/WS";
-import WebSocket from "ws";
+import { Server } from "socket.io";
+import { createServer } from "http";
+import express from "express";
 import notificationsWorker from "./workers/notificationWorker";
-import { handleMessage } from "./Handles/NotificatiosHandler";
-import NotificationsRepository from "./repositories/Notifications";
-
-const handleEvent = new handleMessage(new NotificationsRepository())
+import NotificationHandler from "./Handlers/NotificationHandler";
 
 
+const app = express()
+const httpServer = createServer(app)
 
-const clients: { ws: WebSocket, id_user?: number }[] = []
+const io = new Server(httpServer, { cors: { origin: "http://localhost:3000", methods: ["GET"] } },)
 
 
-wss.on("connection", (ws: WebSocket) => {
-    console.log(`user connected`)
-    const client: { ws: WebSocket, id_user?: number } = { ws };
-    clients.push(client)
 
-    notificationsWorker.on("completed", async job => {
-        try {
-            notificationsWorker.on("failed", () => ws.send("erro em inserir notificação"))
+notificationsWorker.on("completed", async job => {
+    await NotificationHandler.Send(Number(job.data.id_destinatario))
+})
 
-            client.id_user = Number(JSON.parse(job.data.id_destinatario))
-            if (typeof client.id_user !== "number") { ws.send("id_user invalido"); return null }
 
-            console.log(`🔔 Nova notificação instantânea para o usuário: \x1b[32m${client.id_user}\x1b[0m`);
-            return await handleEvent.getNotifications(ws, client.id_user)
-        } catch (err) {
-            ws.send(`erro ao se conectar ${err}`)
-        }
+io.on("connection", (socket) => {
+    const handler = new NotificationHandler(socket)
+
+    console.log("cliente conectado")
+
+    socket.on("register", (id_user: number) => {
+        handler.Register(Number(id_user))
     })
 
-    // ws.on("message", (msg: string) => {
-    //     try {
-    //         const ws_id_user = Number(JSON.parse(msg))
-    //         client.id_user = (ws_id_user);
-
-    //         notificationsWorker.on("completed", async job => {
-    //             if (typeof client.id_user !== "number") { ws.send("id_user não definido ou inválido"); return null; }
-
-    //             console.log("Pintou notificação:", job.id)
-    //             return await handleEvent.getNotifications(ws, client.id_user);
-    //         })
-    //     } catch (err) { ws.send(`erro ao buscar notificação ${err}`) }
-    // })
-
-    ws.on("close", () => {
-        const idx = clients.findIndex(c => c.ws === ws)
-        if (idx !== -1) clients.splice(idx, 1)
-        console.log("Cliente desconectado")
+    socket.on("disconnect", () => {
+        handler.Disconnect()
     })
 })
 
 
 
-console.log(`🔗 Servidor WebSocket iniciado na porta ${process.env.PORT}`);
+httpServer.listen(process.env.PORT || 3002, () => {
+    console.log(`🔗 Servidor ioSocket iniciado na porta ${process.env.PORT}`);
+})
