@@ -8,7 +8,13 @@ import NotificationHandler from "./Handlers/NotificationHandler";
 const app = express()
 const httpServer = createServer(app)
 
-const io = new Server(httpServer, { cors: { origin: "http://localhost:3000", methods: ["GET"] } },)
+const io = new Server(httpServer, {
+    cors: {
+        origin: "http://localhost:3000", 
+        methods: ["GET"],
+        credentials: true
+    }
+},);
 
 
 
