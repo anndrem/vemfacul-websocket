@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { NotificationsService } from "../Services/NotificatiosServices";
+import { NotificationsService } from "../services/NotificatiosServices";
 import NotificationsRepository from "../repositories/Notifications";
 
 const service = new NotificationsService(new NotificationsRepository())

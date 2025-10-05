@@ -1,7 +1,7 @@
 import { Worker } from "bullmq"
 import IORedis from "ioredis"
 import NotificationsRepository from "../repositories/Notifications"
-import { NotificationsService } from "../Services/NotificatiosServices"
+import { NotificationsService } from "../services/NotificatiosServices"
 
 
 const connection = new IORedis(process.env.IOREDIS_URL ?? "", { maxRetriesPerRequest: null })
