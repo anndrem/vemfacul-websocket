@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { NotificationsService } from "../Services/NotificatiosServices";
+import { NotificationsService } from "../services/NotificatiosServices";
 import NotificationsRepository from "../repositories/Notifications";
 
 const service = new NotificationsService(new NotificationsRepository())
@@ -16,10 +16,10 @@ export class NotificationHandler {
 
     async Register(id_user: number) {
         const exists = clients.find(c => c.id_user === id_user)
-
         if (exists) { console.log("Esse já cliente existe"); return; }
 
         clients.push({ socket: this.socket, id_user })
+        console.table(clients.map(c => ({ socket_id: c.socket.id, id_user: c.id_user })))
     }
 
     static async Send(id_destinatario: number) {
