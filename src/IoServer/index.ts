@@ -3,6 +3,7 @@ import { createServer } from "http";
 import express from "express";
 import notificationsWorker from "../workers/notificationWorker";
 import NotificationHandler from "../Handlers/NotificationHandler";
+import { socketAuth } from "../middleware/sokcetAuth";
 
 
 const app = express()
@@ -14,6 +15,8 @@ class Io {
 
     constructor() {
         this.io = new Server(httpServer, { cors: { origin: "http://localhost:3000", methods: ["GET"], credentials: true } },)
+
+        this.io.use(socketAuth)
         this.setUpWorker();
         this.setUpServer();
     }
@@ -28,11 +31,11 @@ class Io {
         this.io.on("connection", (socket) => {
             const handler = new NotificationHandler(socket)
 
+            const user = socket.data.user
+            console.log(user.id)
             console.log("cliente conectado")
 
-            socket.on("register", (id_user: number) => {
-                handler.Register(Number(id_user))
-            })
+            handler.Register(+user.id)
 
             socket.on("disconnect", () => {
                 handler.Disconnect()

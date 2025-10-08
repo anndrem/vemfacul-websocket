@@ -2,26 +2,17 @@ import jwt from "jsonwebtoken"
 import { Socket } from "socket.io"
 
 export function socketAuth(socket: Socket, next: (err?: Error) => void) {
+    const cookies = socket.handshake.headers.cookie || ""
+    const token = cookies.substring(6)
+    
+    if (!token) { return next(new Error("Token ausente nos cookies")); }
+    
     try {
-        const token =
-            socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split("")[1];
 
-        if (!token) {
-            console.warn("❌ Conexão recusada: token ausente");
-            return next(new Error("Authentication error: token missing"));
-        }
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!)
+        socket.data.user = decoded
 
-        const secret = process.env.JWT_SECRET;
-        if (!secret) {
-            console.error("❌ JWT_SECRET is not defined in environment variables");
-            return next(new Error("Authentication error: server misconfiguration"));
-        }
-        
-        const decoded = jwt.verify(token, secret) as unknown as { id_user: number };
-
-         (socket as any).user = decoded;
-
-        console.log(`🔐 Usuário autenticado no socket: ${decoded.id_user}`);
+        console.log(`✅ Usuário autenticado via cookie`);
         next();
 
     } catch (err) {
