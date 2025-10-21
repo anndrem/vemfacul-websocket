@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
-import { NotificationsService } from "../services/NotificatiosServices";
-import NotificationsRepository from "../repositories/Notifications";
+import { NotificationsService } from "../services/NotificationsServices";
+import NotificationsRepository from "../repositories/NotificationsRepository";
 
 const service = new NotificationsService(new NotificationsRepository())
 
@@ -25,7 +25,7 @@ export class NotificationHandler {
     static async Send(id_destinatario: number) {
         const targetClient = clients.find(c => c.id_user === id_destinatario)
 
-        if (!targetClient) { console.log("Cliente nao conectado"); return }
+        if (!targetClient) return console.log("❌ Cliente não conectado")
 
         try {
             const n_notification = await service.getNotifications(id_destinatario);
@@ -40,7 +40,7 @@ export class NotificationHandler {
     Disconnect() {
         const idx = clients.findIndex(c => c.socket === this.socket)
         if (idx !== -1) clients.splice(idx, 1)
-        console.log("🔴 Cliente desconectado:", this.socket.id);
+        console.log("🔴 Cliente desconectado: ", this.socket.id);
     }
 
 }
