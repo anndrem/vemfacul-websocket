@@ -1,7 +1,7 @@
 import { Worker } from "bullmq"
 import IORedis from "ioredis"
-import NotificationsRepository from "../repositories/Notifications"
-import { NotificationsService } from "../services/NotificatiosServices"
+import NotificationsRepository from "../repositories/NotificationsRepository"
+import { NotificationsService } from "../services/NotificationsServices"
 
 
 const connection = new IORedis(process.env.IOREDIS_URL ?? "", { maxRetriesPerRequest: null })
@@ -11,12 +11,12 @@ const notificationsWorker = new Worker(
     "notificationsQueue",
     async job => {
         try {
-            const {id_destinatario, id_actor, id_post, type} = job.data
+            const { id_destinatario, id_actor, id_post, type } = job.data
             return (await handleEvent.createNotification(id_destinatario, id_actor, id_post, type))
         } catch (err) {
-            console.error("erro ao inserir notificação", err)
+            console.error("Erro ao inserir notificação", err)
         }
     }
-, { connection })
+    , { connection })
 
 export default notificationsWorker;

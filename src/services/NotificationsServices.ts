@@ -1,19 +1,20 @@
-import NotificationsRepository from "../repositories/Notifications";
+import NotificationsRepository from "../repositories/NotificationsRepository";
 
 
 export class NotificationsService {
     constructor(private repository: NotificationsRepository) { }
 
     async createNotification(id_destinatario: number, id_actor: number, id_post: number, type: string) {
-        if (!id_destinatario || !id_post || !type) { throw new Error("MISSIN_DEPENDENCY"); }
+        if (!id_destinatario || !id_post || !type) throw new Error("MISSIN_DEPENDENCY");
 
         const result = await this.repository.insertNotifications(id_destinatario, id_actor, id_post, type)
         return result.rows[0].id_user
     }
+
     async getNotifications(id_user: number) {
         let response: number;
-        if (!id_user) {throw new Error("id_user nao pode ser vaizo") ;}
-        
+        if (!id_user) throw new Error("id_user não pode ser vazio")
+
         const result = await this.repository.selectNotifications(id_user)
         response = Number(result.rows[0].notifications)
 

@@ -1,3 +1,5 @@
 export type ServerMessage = {
-    payload: { n_count: number}
+    payload: {
+        n_count: number
+    }
 };
