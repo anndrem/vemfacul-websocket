@@ -20,6 +20,7 @@ class Io {
 
     private setUpWorker() {
         notificationsWorker.on("completed", async job => {
+            if (job.data.type === "Redação") return await NotificationHandler.Send(Number(job.data.id_user))
             await NotificationHandler.Send(Number(job.data.id_destinatario))
         })
     };
@@ -30,6 +31,7 @@ class Io {
 
             const user = socket.data.user
             console.log("🟢 Cliente Conectado: " + user.id)
+            handler.sendInitialNotifications()
 
             handler.Register(+user.id)
 

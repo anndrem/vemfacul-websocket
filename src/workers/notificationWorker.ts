@@ -11,6 +11,11 @@ const notificationsWorker = new Worker(
     "notificationsQueue",
     async job => {
         try {
+            if (job.data.type === "Redação") {
+                const { id_user, content, type } = job.data
+                console.log(job.data)
+                return await handleEvent.insertEssayNotification(id_user, content, type)
+            }
             const { id_destinatario, id_actor, id_post, type } = job.data
             return (await handleEvent.createNotification(id_destinatario, id_actor, id_post, type))
         } catch (err) {

@@ -22,6 +22,12 @@ export class NotificationHandler {
         console.table(clients.map(c => ({ socket_id: c.socket.id, id_user: c.id_user })))
     }
 
+    async sendInitialNotifications() {
+        const user = this.socket.data.user
+        const n_notification = await service.getNotifications(user.id);
+        this.socket.emit("notifications", n_notification)
+    }
+
     static async Send(id_destinatario: number) {
         console.log(`🔔 Enviando notificações para usuário \x1b[32m${id_destinatario}\x1b[0m`);
         const targetClient = clients.find(c => c.id_user === id_destinatario)

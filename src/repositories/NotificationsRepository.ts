@@ -9,6 +9,14 @@ export default class NotificationsRepository {
     return await pool.query(query, values)
   }
 
+  async insertEssayNotification(id_destinatario: number, content: string, type: "Redação") {
+    const values = [id_destinatario, content, type]
+
+    const query = "INSERT INTO notifications_table (id_user, content, type) VALUES ($1, $2, $3) returning id_user"
+    return await pool.query(query, values)
+
+  }
+
   async selectNotifications(id_user: number) {
     const values = [id_user]
 

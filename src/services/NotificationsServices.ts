@@ -11,6 +11,13 @@ export class NotificationsService {
         return result.rows[0].id_user
     }
 
+    async insertEssayNotification(id_destinatario: number, content: string, type: "Redação") {
+        if (!id_destinatario || !content || !type) throw new Error("MISSIN_DEPENDENCY");
+
+        const result = await this.repository.insertEssayNotification(id_destinatario, content, type)
+        return result.rows[0].id_user
+    }
+
     async getNotifications(id_user: number) {
         let response: number;
         if (!id_user) throw new Error("id_user não pode ser vazio")
