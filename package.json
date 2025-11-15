@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only --env-file .env src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "worker": "ts-node-dev --env-file .env src/workers/essayWorker.ts"
+    "worker": "ts-node-dev --env-file .env src/workers/NotificationWorker.ts"
   },
   "repository": {
     "type": "git",

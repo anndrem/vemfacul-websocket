@@ -19,4 +19,16 @@ const notificationsWorker = new Worker(
     }
     , { connection })
 
+notificationsWorker.on("completed", job => {
+    console.log(`✅ Job ${job.id} concluído`);
+});
+
+notificationsWorker.on("ready", () => {
+    console.log(`✅ Notifications Worker rodando!`)
+})
+
+notificationsWorker.on("failed", (job, err) => {
+    console.error(`❌ Job ${job?.id} falhou:`, err);
+});
+
 export default notificationsWorker;

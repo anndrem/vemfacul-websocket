@@ -23,6 +23,7 @@ export class NotificationHandler {
     }
 
     static async Send(id_destinatario: number) {
+        console.log(`🔔 Enviando notificações para usuário \x1b[32m${id_destinatario}\x1b[0m`);
         const targetClient = clients.find(c => c.id_user === id_destinatario)
 
         if (!targetClient) return console.log("❌ Cliente não conectado")
